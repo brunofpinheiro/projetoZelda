@@ -12,8 +12,8 @@ public class PlayerController : MonoBehaviour {
     private Vector3 direction;
     private bool isWalk;
 
-    [Header("Camera")]
-    public GameObject camB;
+    float horizontal;
+    float vertical;
 
     // Start is called before the first frame update
     void Start() {
@@ -23,14 +23,23 @@ public class PlayerController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        Inputs();
+        MoveCharacter();
+        UpdateAnimator();
+    }
+
+    void Inputs() {
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
 
         if (Input.GetButtonDown("Fire1")) {
             animator.SetTrigger("Attack");
         }
+    }
 
+    void MoveCharacter() {
         direction = new Vector3(horizontal, 0f, vertical).normalized;
+
         if (direction.magnitude > 0.1f) {
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, targetAngle, 0);
@@ -40,22 +49,9 @@ public class PlayerController : MonoBehaviour {
         }
         
         controller.Move(direction * movementSpeed * Time.deltaTime);
+    }
+    
+    void UpdateAnimator() {
         animator.SetBool("isWalk", isWalk);
-    }
-
-    private void OnTriggerEnter(Collider other) {
-        switch (other.gameObject.tag) {
-            case "CamTrigger":
-                 camB.SetActive(true);
-                 break;
-        }
-    }
-
-    private void OnTriggerExit(Collider other) {
-        switch (other.gameObject.tag) {
-            case "CamTrigger":
-                 camB.SetActive(false);
-                 break;
-        }
     }
 }
