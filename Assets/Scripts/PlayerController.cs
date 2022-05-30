@@ -8,12 +8,17 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Config Player")]
     public float movementSpeed = 3f;
-
     private Vector3 direction;
     private bool isWalk;
 
+    // Input
     float horizontal;
     float vertical;
+
+    [Header("Attack config")]
+    public ParticleSystem fxAttack;
+    [SerializeField]
+    private bool isAttack;
 
     // Start is called before the first frame update
     void Start() {
@@ -32,9 +37,19 @@ public class PlayerController : MonoBehaviour {
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
 
-        if (Input.GetButtonDown("Fire1")) {
-            animator.SetTrigger("Attack");
+        if (Input.GetButtonDown("Fire1") && !isAttack) {
+            Attack();
         }
+    }
+
+    void Attack() {
+        isAttack = true;
+        animator.SetTrigger("Attack");
+        fxAttack.Emit(1);
+    }
+
+    void AttackIsDone() {
+        isAttack = false;
     }
 
     void MoveCharacter() {
