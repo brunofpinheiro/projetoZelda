@@ -7,17 +7,16 @@ public class SlimeIA : MonoBehaviour
     private Animator animator;
     public int hitPoints;
     private bool isDead = false;
+    public enemyState state;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+      ManageState();
     }
 
     IEnumerator Died() {
@@ -38,6 +37,38 @@ public class SlimeIA : MonoBehaviour
             animator.SetTrigger("Die");
             StartCoroutine("Died");
         }
+    }
+
+    void ManageState() {
+      switch(state) {
+        case enemyState.IDLE:
+          break;
+
+        case enemyState.ALERT:
+          break;
+
+        case enemyState.EXPLORE:
+          break;
+
+        case enemyState.FOLLOW:
+          break;
+
+        case enemyState.FURY:
+          break;
+
+        case enemyState.PATROL:
+          break;
+      }
+    }
+
+    void ChangeState(enemyState newState) {
+      switch(state) {
+        case enemyState.IDLE:
+          break;
+
+        case enemyState.ALERT:
+          break;
+      }
     }
     #endregion
 }
