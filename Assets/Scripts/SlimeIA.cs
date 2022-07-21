@@ -1,8 +1,11 @@
- using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SlimeIA : MonoBehaviour {
+  private GameManager _gameManager;
+
     private Animator animator;
     public int hitPoints;
     private bool isDead = false;
@@ -11,10 +14,19 @@ public class SlimeIA : MonoBehaviour {
     public const float idleWaitTime = 3f;
     public const float patrolWaitTime = 5f;
 
+    // IA
+    private NavMeshAgent agent;
+    private Vector3 destination;
+    private int wayPointId;
+
     // Start is called before the first frame update
     void Start() {
-        animator = GetComponent<Animator>();
-        ChangeState(state);
+      _gameManager = FindObjectOfType(typeof(GameManager)) as GameManager;
+
+      animator = GetComponent<Animator>();
+      agent = GetComponent<NavMeshAgent>();
+
+      ChangeState(state);
     }
 
     // Update is called once per frame
@@ -23,9 +35,9 @@ public class SlimeIA : MonoBehaviour {
     }
 
     IEnumerator Died() {
-        isDead = true;
-        yield return new WaitForSeconds(2.3f);
-        Destroy(this.gameObject);
+      isDead = true;
+      yield return new WaitForSeconds(2.3f);
+      Destroy(this.gameObject);
     }
 
     #region MEUS METODOS
@@ -72,6 +84,8 @@ public class SlimeIA : MonoBehaviour {
 
       switch(state) {
         case enemyState.IDLE:
+          destination = transform.position;
+          agent.destination = destination;
           StartCoroutine("IDLE");
           break;
 
@@ -79,6 +93,9 @@ public class SlimeIA : MonoBehaviour {
           break;
 
         case enemyState.PATROL:
+          wayPointId = Random.Range(0, _gameManager.slimeWayPoints.Length);
+          destination = _gameManager.slimeWayPoints[wayPointId].position;
+          agent.destination = destination;
           StartCoroutine("PATROL");
           break;
       }
@@ -86,16 +103,20 @@ public class SlimeIA : MonoBehaviour {
 
     IEnumerator IDLE() {
       yield return new WaitForSeconds(idleWaitTime);
-      if (Rand() < 50) {
-        ChangeState(enemyState.IDLE);
-      } else {
-        ChangeState(enemyState.PATROL);
-      }
+      StayStill(50); // 50% de chance de ficar parado ou entrar em patrulha
     }
 
     IEnumerator PATROL() {
       yield return new WaitForSeconds(patrolWaitTime);
-      ChangeState(enemyState.IDLE);
+      StayStill(30); // 30% de chance de ficar parado e 70% de ficar em patrulha
+    }
+
+    void StayStill(int yes) {
+      if (Rand() < yes) {
+        ChangeState(enemyState.IDLE);
+      } else {
+        ChangeState(enemyState.PATROL);
+      }
     }
 
     int Rand() {
