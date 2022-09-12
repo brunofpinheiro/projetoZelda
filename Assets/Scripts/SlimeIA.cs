@@ -33,12 +33,19 @@ public class SlimeIA : MonoBehaviour {
       ManageState();
       isWalk = agent.desiredVelocity.magnitude >= 0.1f;
       animator.SetBool("isWalk", isWalk);
+      animator.SetBool("isAlert", isAlert);
     }
 
     IEnumerator Died() {
       isDead = true;
       yield return new WaitForSeconds(2.3f);
       Destroy(this.gameObject);
+    }
+
+    private void OnTriggerEnter(Collider other) {
+      if (other.gameObject.tag == "Player" && (state == enemyState.IDLE || state == enemyState.PATROL)) {
+        ChangeState(enemyState.ALERT);
+      }
     }
 
     #region MEUS METODOS
@@ -86,6 +93,10 @@ public class SlimeIA : MonoBehaviour {
           break;
 
         case enemyState.ALERT:
+          agent.stoppingDistance = 0;
+          destination = transform.position;
+          agent.destination = destination;
+          isAlert = true;
           break;
 
         case enemyState.PATROL:
