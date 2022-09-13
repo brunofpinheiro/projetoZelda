@@ -14,6 +14,7 @@ public class SlimeIA : MonoBehaviour {
     // IA
     private bool isWalk;
     private bool isAlert;
+    private bool isAttacking;
     private bool isPlayerVisible;
     private NavMeshAgent agent;
     private Vector3 destination;
@@ -76,11 +77,21 @@ public class SlimeIA : MonoBehaviour {
         case enemyState.FOLLOW:
           destination = _gameManager.player.position;
           agent.destination = destination;
+
+          if (agent.remainingDistance <= agent.stoppingDistance) {
+            Attack();
+          }
+
           break;
 
         case enemyState.FURY:
           destination = _gameManager.player.position;
           agent.destination = destination;
+
+          if (agent.remainingDistance <= agent.stoppingDistance) {
+            Attack();
+          }
+          
           break;
 
         case enemyState.PATROL:
@@ -91,10 +102,9 @@ public class SlimeIA : MonoBehaviour {
     void ChangeState(enemyState newState) {
 
       StopAllCoroutines();
-      state = newState;
       isAlert = false;
 
-      switch(state) {
+      switch(newState) {
         case enemyState.IDLE:
           agent.stoppingDistance = 0;
           destination = transform.position;
@@ -120,6 +130,7 @@ public class SlimeIA : MonoBehaviour {
 
         case enemyState.FOLLOW:
           agent.stoppingDistance = _gameManager.slimeDistanceToAttack;
+          StartCoroutine("FOLLOW");
           break;
 
         case enemyState.FURY:
@@ -128,6 +139,8 @@ public class SlimeIA : MonoBehaviour {
           agent.destination = destination;
         break;
       }
+
+      state = newState;
     }
 
     IEnumerator IDLE() {
@@ -150,6 +163,19 @@ public class SlimeIA : MonoBehaviour {
       }
     }
 
+    IEnumerator FOLLOW() {
+      yield return new WaitUntil(() => !isPlayerVisible);
+      print("perdi voce");
+
+      yield return new WaitForSeconds(_gameManager.slimeAlertTime);
+      StayStill(50);
+    }
+
+    IEnumerator ATTACK() {
+      yield return new WaitForSeconds(_gameManager.slimeAttackDelay);
+      isAttacking = false;
+    }
+
     void StayStill(int yes) {
       if (Rand() < yes) {
         ChangeState(enemyState.IDLE);
@@ -160,6 +186,17 @@ public class SlimeIA : MonoBehaviour {
 
     int Rand() {
       return Random.Range(0, 100); //0...99
+    }
+
+    void Attack() {
+      if (!isAttacking) {
+        isAttacking = true;
+        animator.SetTrigger("Attack");
+      }
+    }
+
+    void AttackIsDone() {
+      StartCoroutine("ATTACK");
     }
 
     #endregion
